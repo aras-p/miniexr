@@ -1,8 +1,8 @@
+#define COMPILE_TEST_MAIN_ENTRYPOINT 1
+
 #include <assert.h>
-#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 
 #define ARRAY_SIZE(x) sizeof(x)/sizeof(x[0])
 
@@ -11,7 +11,7 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 {
 	const unsigned ww = width-1;
 	const unsigned hh = height-1;
-	const uint8_t kHeader[] = {
+	const unsigned char kHeader[] = {
 		0x76, 0x2f, 0x31, 0x01, // magic
 		2, 0, 0, 0, // version, scanline
 		// channels
@@ -67,18 +67,18 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 	const int kHeaderSize = ARRAY_SIZE(kHeader);
 
 	const int kScanlineTableSize = 8 * height;
-	const uint32_t pixelRowSize = width * 3 * 2;
-	const uint32_t fullRowSize = pixelRowSize + 8;
+	const unsigned pixelRowSize = width * 3 * 2;
+	const unsigned fullRowSize = pixelRowSize + 8;
 
-	uint32_t bufSize = kHeaderSize + kScanlineTableSize + height * fullRowSize;
-	uint8_t* buf = (uint8_t*)malloc (bufSize);
+	unsigned bufSize = kHeaderSize + kScanlineTableSize + height * fullRowSize;
+	unsigned char* buf = (unsigned char*)malloc (bufSize);
 
 	// copy in header
 	memcpy (buf, kHeader, kHeaderSize);
 
 	// line offset table
-	uint32_t ofs = kHeaderSize + kScanlineTableSize;
-	uint8_t* ptr = buf + kHeaderSize;
+	unsigned ofs = kHeaderSize + kScanlineTableSize;
+	unsigned char* ptr = buf + kHeaderSize;
 	for (int y = 0; y < height; ++y)
 	{
 		*ptr++ = ofs & 0xFF;
@@ -93,7 +93,7 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 	}
 
 	// scanline data
-	const uint8_t* src = (const uint8_t*)rgba16f;
+	const unsigned char* src = (const unsigned char*)rgba16f;
 	for (int y = 0; y < height; ++y)
 	{
 		// coordinate
@@ -108,7 +108,7 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 		*ptr++ = (pixelRowSize >> 24) & 0xFF;
 		// B, G, R
 		memcpy (ptr, src, width*6);
-		const uint8_t* chsrc;
+		const unsigned char* chsrc;
 		chsrc = src + 4;
 		for (int x = 0; x < width; ++x)
 		{
@@ -139,3 +139,15 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 	*outSize = bufSize;
 	return buf;
 }
+
+
+#if COMPILE_TEST_MAIN_ENTRYPOINT
+
+#include <stdio.h>
+
+int main()
+{
+	return 0;
+}
+
+#endif
