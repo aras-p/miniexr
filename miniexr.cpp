@@ -6,7 +6,9 @@
 // Testing status: "works for me".
 
 
+// Compile main() that writes out a test .exr file?
 #define COMPILE_TEST_MAIN_ENTRYPOINT 1
+
 
 #include <assert.h>
 #include <string.h>
@@ -15,6 +17,9 @@
 #define ARRAY_SIZE(x) sizeof(x)/sizeof(x[0])
 
 
+// Writes EXR into a memory buffer.
+// Input: (width) x (height) image, 8 bytes per pixel (R,G,B,A order, 16 bit float per channel).
+// Returns memory buffer with .EXR contents and buffer size in outSize. free() the buffer when done with it.
 unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba16f, size_t* outSize)
 {
 	const unsigned ww = width-1;
@@ -170,6 +175,7 @@ static unsigned short FloatToHalf (float f)
 	if (i==0)
 		return 0;
 
+	// Not robust at handling denormals, infinities, ...
 	return ((i>>16)&0x8000)|((((i&0x7f800000)-0x38000000)>>13)&0x7c00)|((i>>13)&0x03ff);
 }
 
@@ -184,9 +190,9 @@ int main()
 	{
 		for (int x = 0; x < kW; ++x)
 		{
-			rgba[ofs++] = FloatToHalf(powf(x*2.0f/kW,kGamma));
-			rgba[ofs++] = FloatToHalf(powf(y*2.0f/kH,kGamma));
-			rgba[ofs++] = FloatToHalf((x&y) ? 1.0f : 0.0f);
+			rgba[ofs++] = FloatToHalf(powf(x*2.0f/kW,kGamma)); // horizontal red gradient
+			rgba[ofs++] = FloatToHalf(powf(y*2.0f/kH,kGamma)); // vertical green gradient
+			rgba[ofs++] = FloatToHalf((x&y) ? 1.0f : 0.0f); // blue Sierpinski triangle
 			rgba[ofs++] = 0;
 		}
 	}
