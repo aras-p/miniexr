@@ -1,3 +1,11 @@
+// miniexr.cpp - v0.1 - public domain - 2012 Aras Pranckevicius / Unity Technologies
+//
+// Writes OpenEXR files out of half-precision RGBA data.
+//
+// Only tested on Windows (VS2008) and Mac (gcc 4.2), little endian.
+// Testing status: "works for me".
+
+
 #define COMPILE_TEST_MAIN_ENTRYPOINT 1
 
 #include <assert.h>
@@ -72,6 +80,8 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 
 	unsigned bufSize = kHeaderSize + kScanlineTableSize + height * fullRowSize;
 	unsigned char* buf = (unsigned char*)malloc (bufSize);
+	if (!buf)
+		return NULL;
 
 	// copy in header
 	memcpy (buf, kHeader, kHeaderSize);
@@ -139,6 +149,7 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 	*outSize = bufSize;
 	return buf;
 }
+
 
 
 #if COMPILE_TEST_MAIN_ENTRYPOINT
