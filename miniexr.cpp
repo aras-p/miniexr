@@ -144,9 +144,49 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 #if COMPILE_TEST_MAIN_ENTRYPOINT
 
 #include <stdio.h>
+#include <math.h>
+
+static unsigned short FloatToHalf (float f)
+{
+	union convertf2i {
+		unsigned int i;
+		float f;
+	};
+	convertf2i f2i;
+	f2i.f = f;
+	unsigned int i = f2i.i;
+
+	if (i==0)
+		return 0;
+
+	return ((i>>16)&0x8000)|((((i&0x7f800000)-0x38000000)>>13)&0x7c00)|((i>>13)&0x03ff);
+}
 
 int main()
 {
+	const int kW = 64;
+	const int kH = 32;
+	unsigned short rgba[kW*kH*4];
+	unsigned ofs = 0;
+	const float kGamma = 2.2f;
+	for (int y = 0; y < kH; ++y)
+	{
+		for (int x = 0; x < kW; ++x)
+		{
+			rgba[ofs++] = FloatToHalf(powf(x*2.0f/kW,kGamma));
+			rgba[ofs++] = FloatToHalf(powf(y*2.0f/kH,kGamma));
+			rgba[ofs++] = FloatToHalf((x&y) ? 1.0f : 0.0f);
+			rgba[ofs++] = 0;
+		}
+	}
+
+	size_t exrSize;
+	unsigned char* exr = miniexr_write (kW, kH, rgba, &exrSize);
+	FILE* f = fopen ("test.exr", "wb");
+	fwrite (exr, 1, exrSize, f);
+	fclose (f);
+	free (exr);
+
 	return 0;
 }
 
