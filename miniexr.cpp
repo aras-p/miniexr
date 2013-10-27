@@ -1,9 +1,13 @@
-// miniexr.cpp - v0.1 - public domain - 2012 Aras Pranckevicius / Unity Technologies
+// miniexr.cpp - v0.2 - public domain - 2013 Aras Pranckevicius / Unity Technologies
 //
-// Writes OpenEXR files out of half-precision RGBA data.
+// Writes OpenEXR RGB files out of half-precision RGBA or RGB data.
 //
-// Only tested on Windows (VS2008) and Mac (gcc 4.2), little endian.
+// Only tested on Windows (VS2008) and Mac (clang 3.3), little endian.
 // Testing status: "works for me".
+//
+// History:
+// 0.2 Source data can be RGB or RGBA now.
+// 0.1 Initial release.
 
 
 // Compile main() that writes out a test .exr file?
@@ -18,9 +22,12 @@
 
 
 // Writes EXR into a memory buffer.
-// Input: (width) x (height) image, 8 bytes per pixel (R,G,B,A order, 16 bit float per channel).
+// Input:
+//   - (width) x (height) image,
+//   - channels=4: 8 bytes per pixel (R,G,B,A order, 16 bit float per channel; alpha ignored), or
+//   - channels=3: 6 bytes per pixel (R,G,B order, 16 bit float per channel).
 // Returns memory buffer with .EXR contents and buffer size in outSize. free() the buffer when done with it.
-unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba16f, size_t* outSize)
+unsigned char* miniexr_write (unsigned width, unsigned height, unsigned channels, const void* rgba16f, size_t* outSize)
 {
 	const unsigned ww = width-1;
 	const unsigned hh = height-1;
@@ -109,6 +116,7 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 
 	// scanline data
 	const unsigned char* src = (const unsigned char*)rgba16f;
+	const int stride = channels * 2;
 	for (int y = 0; y < height; ++y)
 	{
 		// coordinate
@@ -129,24 +137,24 @@ unsigned char* miniexr_write (unsigned width, unsigned height, const void* rgba1
 		{
 			*ptr++ = chsrc[0];
 			*ptr++ = chsrc[1];
-			chsrc += 8;
+			chsrc += stride;
 		}
 		chsrc = src + 2;
 		for (int x = 0; x < width; ++x)
 		{
 			*ptr++ = chsrc[0];
 			*ptr++ = chsrc[1];
-			chsrc += 8;
+			chsrc += stride;
 		}
 		chsrc = src + 0;
 		for (int x = 0; x < width; ++x)
 		{
 			*ptr++ = chsrc[0];
 			*ptr++ = chsrc[1];
-			chsrc += 8;
+			chsrc += stride;
 		}
 
-		src += width*8;
+		src += width * stride;
 	}
 
 	assert (ptr - buf == bufSize);
@@ -198,7 +206,7 @@ int main()
 	}
 
 	size_t exrSize;
-	unsigned char* exr = miniexr_write (kW, kH, rgba, &exrSize);
+	unsigned char* exr = miniexr_write (kW, kH, 4, rgba, &exrSize);
 	FILE* f = fopen ("test.exr", "wb");
 	fwrite (exr, 1, exrSize, f);
 	fclose (f);
