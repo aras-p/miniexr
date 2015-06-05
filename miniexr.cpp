@@ -38,9 +38,9 @@ unsigned char* miniexr_write (unsigned width, unsigned height, unsigned channels
 		'c','h','a','n','n','e','l','s',0,
 		'c','h','l','i','s','t',0,
 		55,0,0,0,
-		'B',0, 1,0,0,0, 0, 0,0,0,1,0,0,0,1,0,0,0, // R, half
+		'B',0, 1,0,0,0, 0, 0,0,0,1,0,0,0,1,0,0,0, // B, half
 		'G',0, 1,0,0,0, 0, 0,0,0,1,0,0,0,1,0,0,0, // G, half
-		'R',0, 1,0,0,0, 0, 0,0,0,1,0,0,0,1,0,0,0, // B, half
+		'R',0, 1,0,0,0, 0, 0,0,0,1,0,0,0,1,0,0,0, // R, half
 		0,
 		// compression
 		'c','o','m','p','r','e','s','s','i','o','n',0,
@@ -130,7 +130,6 @@ unsigned char* miniexr_write (unsigned width, unsigned height, unsigned channels
 		*ptr++ = (pixelRowSize >> 16) & 0xFF;
 		*ptr++ = (pixelRowSize >> 24) & 0xFF;
 		// B, G, R
-		memcpy (ptr, src, width*6);
 		const unsigned char* chsrc;
 		chsrc = src + 4;
 		for (int x = 0; x < width; ++x)
