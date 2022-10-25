@@ -1,2 +1,5 @@
 a.out
+*.exe
+*.obj
 *.exr
+.vs/
